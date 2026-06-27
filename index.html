@@ -36,9 +36,8 @@
 /* ── Bandeau de contrôle (hors page A4) ── */
 #sem-controls {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
+  flex-direction: column;
+  gap: 14px;
   margin-bottom: 24px;
   padding: 20px;
   background: var(--bleu-card);
@@ -46,6 +45,15 @@
   border-radius: 6px;
   font-family: var(--font-b);
 }
+.sem-controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+}
+.sem-controls-actions { justify-content: flex-start; }
+.sem-field { display: flex; flex-direction: column; gap: 4px; }
+#sem-search-wrapper.sem-field { position: relative; flex: 1; min-width: 220px; }
 #sem-controls label { font-weight: 600; font-size: 13px; color: var(--bleu-deep); }
 #sem-controls select, #sem-controls input {
   padding: 9px 12px; border: 1px solid rgba(28,58,94,0.30); border-radius: 6px;
@@ -53,7 +61,6 @@
   font-family: var(--font-b);
 }
 #sem-controls select:focus, #sem-controls input:focus { outline: none; border-color: var(--rouge); }
-#sem-search-wrapper { position: relative; flex: 1; min-width: 220px; }
 #sem-search-results {
   position: absolute; top: 100%; left: 0; right: 0;
   background: white; border: 1px solid rgba(28,58,94,0.20); border-radius: 6px;
@@ -214,23 +221,27 @@
 
 <!-- ════════ CONTRÔLES ════════ -->
 <div id="sem-controls">
-  <div>
-    <label for="sem-level">Échelle</label><br/>
-    <select id="sem-level">
-      <option value="commune">Commune</option>
-      <option value="departement">Département</option>
-      <option value="region">Région</option>
-    </select>
+  <div class="sem-controls-row">
+    <div class="sem-field">
+      <label for="sem-level">Échelle</label>
+      <select id="sem-level">
+        <option value="commune">Commune</option>
+        <option value="departement">Département</option>
+        <option value="region">Région</option>
+      </select>
+    </div>
+
+    <div id="sem-search-wrapper" class="sem-field">
+      <label for="sem-search">Territoire</label>
+      <input type="text" id="sem-search" placeholder="Tape le nom d'une commune, d'un département ou d'une région..." autocomplete="off" />
+      <div id="sem-search-results"></div>
+    </div>
   </div>
 
-  <div id="sem-search-wrapper">
-    <label for="sem-search">Territoire</label><br/>
-    <input type="text" id="sem-search" placeholder="Tape le nom d'une commune, d'un département ou d'une région..." autocomplete="off" />
-    <div id="sem-search-results"></div>
+  <div class="sem-controls-row sem-controls-actions">
+    <button id="sem-generate-btn" disabled>Générer l'image sémantique</button>
+    <button id="sem-download-btn">Télécharger en PDF</button>
   </div>
-
-  <button id="sem-generate-btn" disabled>Générer l'image sémantique</button>
-  <button id="sem-download-btn">Télécharger en PDF</button>
 </div>
 
 <div id="sem-status"></div>
