@@ -459,6 +459,7 @@
       if (!data.adjectives || data.adjectives.length === 0) {
         statusDiv.textContent = data.message || "Pas assez de données pour ce territoire.";
         generateBtn.disabled = false;
+        notifyParentHeight();
         return;
       }
 
@@ -469,6 +470,7 @@
       applyPageScale();
     } catch (e) {
       statusDiv.textContent = "Erreur : " + e.message;
+      notifyParentHeight();
     } finally {
       generateBtn.disabled = false;
     }
@@ -488,11 +490,28 @@
     // compense la hauteur de boîte pour éviter un grand vide sous la page réduite
     const pageHeightPx = page.getBoundingClientRect().height;
     scaleWrap.style.height = (pageHeightPx * scale) + "px";
+    notifyParentHeight();
+  }
+
+  // Informe la page parente (WordPress) de la hauteur réelle du document,
+  // pour que l'iframe qui nous contient s'ajuste dynamiquement au lieu
+  // d'avoir une hauteur fixe qui coupe le bas du contenu.
+  function notifyParentHeight() {
+    // petit délai pour laisser le DOM/transform se stabiliser avant de mesurer
+    requestAnimationFrame(() => {
+      const height = document.documentElement.scrollHeight;
+      window.parent.postMessage({ type: "sem-resize", height }, "*");
+    });
   }
 
   window.addEventListener("resize", () => {
     if (pageOuter.style.display !== "none") applyPageScale();
+    else notifyParentHeight();
   });
+
+  // Notifie une première fois au chargement (pour la hauteur des seuls contrôles,
+  // avant toute génération)
+  notifyParentHeight();
 
   // ════════════════════════════════════════════════════════
   // RENDU DE LA PAGE (texte + nuage de mots horizontal)
