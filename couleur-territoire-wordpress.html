@@ -415,9 +415,11 @@
       if (!resp.ok) throw new Error(data.error || "Erreur lors de la récupération des données");
 
       if (!data.images || data.images.length === 0) {
-        statusDiv.textContent = data.message || "Pas assez de photographies disponibles pour ce territoire.";
-        generateBtn.disabled = false;
-        notifyParentHeight();
+        statusDiv.textContent = "";
+        renderEmptyPage(selectedTerritory.label, data.message || "Pas assez de photographies disponibles pour ce territoire.");
+        pageOuter.style.display = "flex";
+        downloadBtn.style.display = "inline-block";
+        applyPageScale();
         return;
       }
 
@@ -428,9 +430,11 @@
       });
 
       if (colors.length === 0) {
-        statusDiv.textContent = "Impossible d'analyser les photographies de ce territoire (erreur de chargement des images).";
-        generateBtn.disabled = false;
-        notifyParentHeight();
+        statusDiv.textContent = "";
+        renderEmptyPage(selectedTerritory.label, "Les photographies de ce territoire n'ont pas pu être analysées (erreur de chargement des images).");
+        pageOuter.style.display = "flex";
+        downloadBtn.style.display = "inline-block";
+        applyPageScale();
         return;
       }
 
@@ -592,9 +596,46 @@
     return "neutre";
   }
 
+  // Affiche la page A4 complète (header, footer, identité) même quand
+  // aucune photo n'a pu être analysée — pour que l'utilisateur ait toujours
+  // un PDF cohérent à télécharger, avec un message honnête plutôt qu'un
+  // simple texte de statut qui bloque toute génération.
+  function renderEmptyPage(territoryLabel, message) {
+    document.getElementById("col-territory-name").textContent = territoryLabel;
+    document.getElementById("col-label-badge").textContent = `Couleur du territoire — ${territoryLabel}`;
+
+    document.getElementById("col-stat-img").textContent = "0";
+    document.getElementById("col-stat-colors").textContent = "0";
+
+    const today = new Date();
+    const dateStr = today.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+    document.getElementById("col-date").textContent = `Données extraites le ${dateStr}.`;
+
+    const mosaicContent = document.getElementById("col-mosaic-content");
+    mosaicContent.innerHTML = "";
+    mosaicContent.style.alignItems = "center";
+    mosaicContent.style.justifyContent = "center";
+    const msgEl = document.createElement("div");
+    msgEl.style.textAlign = "center";
+    msgEl.style.padding = "0 12mm";
+    msgEl.style.fontFamily = "var(--font-b)";
+    msgEl.style.fontSize = "11pt";
+    msgEl.style.fontStyle = "italic";
+    msgEl.style.color = "var(--bleu-deep)";
+    msgEl.textContent = message;
+    mosaicContent.appendChild(msgEl);
+
+    const breakdownEl = document.getElementById("col-breakdown");
+    breakdownEl.innerHTML = "";
+  }
+
   function renderPage(territoryLabel, colors, totalImages) {
     document.getElementById("col-territory-name").textContent = territoryLabel;
     document.getElementById("col-label-badge").textContent = `Couleur du territoire — ${territoryLabel}`;
+
+    const mosaicContentReset = document.getElementById("col-mosaic-content");
+    mosaicContentReset.style.alignItems = "";
+    mosaicContentReset.style.justifyContent = "";
 
     // Tri par teinte (HSL hue) pour une mosaïque qui forme un dégradé
     // cohérent plutôt qu'un patchwork aléatoire.
